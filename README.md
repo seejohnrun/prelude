@@ -42,7 +42,8 @@ and brings the preloading closer to the data.
 
 ## How?
 
-In the model we can define a custom preloader:
+In the model we can define a custom preloader which takes in a collection of objects
+and returns a Hash of `object -> result`:
 
 ``` ruby
 class Post < ActiveRecord::Base
