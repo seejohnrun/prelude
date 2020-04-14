@@ -42,6 +42,8 @@ and brings the preloading closer to the data.
 
 ## How?
 
+### Relation
+
 In the model we can define a custom preloader which takes in a collection of objects
 and returns a Hash of `object -> result`:
 
@@ -83,4 +85,19 @@ posts = [Post.find(1), Post.find(2)] # Array, not relation
 posts.each.with_prelude do |post|
   post.author
 end
+```
+
+### Single elements
+
+A lot of times in our apps we end up writing a batch version of something, and
+an individual object version. Preloaders can be called on either a collection
+of objects or on a single object.
+
+In the case of being called on a single object, they behave just like a
+memoized method call:
+
+``` ruby
+post = Post.new
+post.number # hit db
+post.number # memoized
 ```

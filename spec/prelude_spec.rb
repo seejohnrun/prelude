@@ -95,4 +95,25 @@ describe Prelude do
       [1, "two"].each.with_prelude.to_a
     }.to raise_error(Prelude::Enumerator::TypeMismatch)
   end
+
+  it 'should memoize when called on a single item' do
+    call_count = 0
+
+    klass = Class.new(ActiveRecord::Base) do
+      self.table_name = 'breweries'
+
+      include Prelude::Preloadable
+
+      define_prelude(:number) do |records|
+        call_count += 1
+        Hash.new { |h, k| h[k] = 42 } # answer is always 42
+      end
+    end
+
+    record = klass.new
+    numbers = 5.times.map { record.number }
+
+    expect(numbers.uniq).to eq([42]) # all the same result
+    expect(call_count).to eq(1) # only one call
+  end
 end
