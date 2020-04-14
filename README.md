@@ -6,7 +6,9 @@ A lot of times you write code in a view that leads to an `n+1`, like:
 
 ``` erb
 <% posts.each do |post| %>
-  <%= post.author.name %>
+  <% post.comments.featured.each do |comment| %>
+    <%= comment.body %>
+  <% end %>
 <% end %>
 ```
 
@@ -21,14 +23,19 @@ Each of the current ways to handle this scenario come with drawbacks:
   - raise errors when `n+1`s are detected, instead of optimizing them
   - are still difficult to fix with `includes` due to the reasons above
 
-A lot of times for more complex relationships or `Array`s we write something
-like:
+---
+
+Imagine we want to preload all of the `Comment`s for the posts in an `Array`,
+but only the ones that are `featured`. Normally this would lead to an `N+1`,
+so we might write:
 
 ``` erb
-<% authors_by_id = Author.where(id: posts.map(&:author_id)).index_by(&:id) %>
+<% featured_comments_by_post_id = Comment.featured.where(post: posts).group_by(&:post_id) %>
 <% posts.each do |post| %>
-  <% author = authors_by_id[post.author_id] %>
-  <%= author.name %>
+  <% featured_comments = featured_comments_by_post_id[post.id] %>
+  <% featured_comments.each do |comment| %>
+    <%= comment.body %>
+  <% end %>
 <% end %>
 ```
 
@@ -52,10 +59,9 @@ class Post < ActiveRecord::Base
   include Preload::Preloadable
 
   # An implementation which takes in an Array[Post], and returns
-  # a Hash[Post]=>[Author]
-  define_prelude(:author) do |posts|
-    authors_by_id = Author.where(id: posts.map(&:author_id)).index_by(&:id)
-    Hash.new { |h, k| h[k] = authors_by_id[k.author_id] }
+  # a Hash[Post]=>Array[Comment]
+  define_prelude(:featured_comments) do |posts|
+    Comment.featured.where(post: posts).group_by(&:post_id)
   end
 end
 ```
@@ -64,13 +70,15 @@ The view stays simple:
 
 ``` erb
 <% posts.each do |post| %>
-  <%= post.author.name %> <%# no n+1 %>
+  <% post.featured_comments.each do |comment| %> <%# no n+1 %>
+    <%= comment.body %>
+  <% end %>
 <% end %>
 ```
 
-The first time that `author` is accessed on `post`, the batch method on the
-`Model` will be executed, and data will be ready for each of the objects in
-each iteration.
+The first time that `featured_comments` is accessed on `post`, the batch method
+on the `Model` will be executed, and data will be ready for the objects in each
+iteration.
 
 You may also combine this API with `strict_loading` to make sure that no records
 inside of an iteration load other associations without using batched loaders.
@@ -83,7 +91,7 @@ If you'd like to use Prelude with an Array of records, it's simple. Just call
 ``` ruby
 posts = [Post.find(1), Post.find(2)] # Array, not relation
 posts.each.with_prelude do |post|
-  post.author
+  post.featured_comments
 end
 ```
 
@@ -98,6 +106,6 @@ memoized method call:
 
 ``` ruby
 post = Post.new
-post.number # hit db
-post.number # memoized
+post.featured_comments # hit db
+post.featured_comments # memoized
 ```
