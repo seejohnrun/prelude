@@ -70,5 +70,17 @@ The first time that `author` is accessed on `post`, the batch method on the
 `Model` will be executed, and data will be ready for each of the objects in
 each iteration.
 
-You can also combine this API with `strict_loading` to make sure that no records
+You may also combine this API with `strict_loading` to make sure that no records
 inside of an iteration load other associations without using batched loaders.
+
+### Arrays
+
+If you'd like to use Prelude with an Array of records, it's simple. Just call
+`with_prelude` while iterating, for example:
+
+``` ruby
+posts = [Post.find(1), Post.find(2)] # Array, not relation
+posts.each.with_prelude do |post|
+  post.author
+end
+```
