@@ -1,9 +1,11 @@
 module Prelude
   module Enumerator
+    TypeMismatch = Class.new(StandardError)
+
     def with_prelude
       return to_enum(:with_prelude) unless block_given?
 
-      # TODO check that all entries in this Array are of the same type
+      raise TypeMismatch unless map(&:class).uniq.count == 1
 
       # Share a preloader
       preloader = Preloader.new(first.class, self)

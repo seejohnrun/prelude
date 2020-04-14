@@ -90,4 +90,9 @@ describe Prelude do
     expect(call_count).to eq(1) # only one call
   end
 
+  it 'should raise an error if there is a type mismatch in the Array' do
+    expect {
+      [1, "two"].each.with_prelude.to_a
+    }.to raise_error(Prelude::Enumerator::TypeMismatch)
+  end
 end
