@@ -5,16 +5,9 @@ describe Prelude do
     expect(Prelude::VERSION).to_not be_nil
   end
 
-  it 'should not define any methods on classes it is not included into' do
-    klass = Class.new(ActiveRecord::Base)
-    expect(klass).not_to respond_to(:define_prelude)
-  end
-
   it 'should be able to call preloaders on a single instance' do
     klass = Class.new(ActiveRecord::Base) do
       self.table_name = 'breweries'
-
-      include Prelude::Preloadable
 
       define_prelude(:number) do |records|
         Hash.new { |h, k| h[k] = 42 } # answer is always 42
@@ -29,8 +22,6 @@ describe Prelude do
 
     klass = Class.new(ActiveRecord::Base) do
       self.table_name = 'breweries'
-
-      include Prelude::Preloadable
 
       define_prelude(:number) do |records|
         call_count += 1
@@ -50,8 +41,6 @@ describe Prelude do
     klass = Class.new(ActiveRecord::Base) do
       self.table_name = 'breweries'
 
-      include Prelude::Preloadable
-
       define_prelude(:number) do |records|
         call_count += 1
         Hash.new { |h, k| h[k] = 42 } # answer is always 42
@@ -70,8 +59,6 @@ describe Prelude do
 
     klass = Class.new(ActiveRecord::Base) do
       self.table_name = 'breweries'
-
-      include Prelude::Preloadable
 
       define_prelude(:number) do |records|
         call_count += 1
@@ -101,8 +88,6 @@ describe Prelude do
 
     klass = Class.new(ActiveRecord::Base) do
       self.table_name = 'breweries'
-
-      include Prelude::Preloadable
 
       define_prelude(:number) do |records|
         call_count += 1

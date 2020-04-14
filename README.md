@@ -56,8 +56,6 @@ and returns a Hash of `object -> result`:
 
 ``` ruby
 class Post < ActiveRecord::Base
-  include Preload::Preloadable
-
   # An implementation which takes in an Array[Post], and returns
   # a Hash[Post]=>Array[Comment]
   define_prelude(:featured_comments) do |posts|
