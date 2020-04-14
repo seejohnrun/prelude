@@ -1,5 +1,6 @@
 require 'fileutils'
 require 'active_record'
+require 'pry'
 require_relative '../lib/prelude'
 
 # Remove existing
