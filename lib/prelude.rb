@@ -3,6 +3,9 @@ require_relative 'prelude/preloadable'
 require_relative 'prelude/relation'
 require_relative 'prelude/enumerator'
 
+# Add support into AR::Base
+ActiveRecord::Base.include(Prelude::Preloadable)
+
 # Patch into AR::Relation to assign ourself to individual records where appropriate
 ActiveRecord::Relation.prepend(Prelude::Relation)
 
