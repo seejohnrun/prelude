@@ -3,7 +3,6 @@ module Prelude
     def initialize(klass, records)
       @klass = klass
       @records = records
-
       @runs = {}
     end
 
