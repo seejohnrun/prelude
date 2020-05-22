@@ -1,4 +1,5 @@
 require_relative './preloader'
+require_relative './method'
 
 module Prelude
   module Preloadable
@@ -14,14 +15,13 @@ module Prelude
 
       # Define how to preload a given method
       def define_prelude(name, batch_size: nil, &blk)
-        preloaders[name] = blk
+        preloaders[name] = Prelude::Method.new(batch_size: batch_size, &blk)
 
         define_method(name) do |*args|
           unless @prelude_preloader
             @prelude_preloader = Preloader.new(self.class, [self])
           end
 
-          @prelude_preloader.set_batch_size(name, batch_size) if batch_size
           @prelude_preloader.fetch(name, self, *args)
         end
       end
