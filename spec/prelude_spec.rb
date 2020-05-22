@@ -25,7 +25,7 @@ describe Prelude do
 
       define_prelude(:number) do |records|
         call_count += 1
-        Hash.new { |h, k| h[k] = 42 } # answer is always 42
+        Hash[records.map { |r| [r, 42] }]  # answer is always 42
       end
     end
 
@@ -123,5 +123,41 @@ describe Prelude do
     end
 
     expect(call_count).to eq(2) # one for each argument
+  end
+
+  it 'should be able to set a batch size' do
+    call_count = 0
+
+    klass = Class.new(ActiveRecord::Base) do
+      self.table_name = 'breweries'
+
+      define_prelude(:number, batch_size: 2) do |records|
+        call_count += 1
+        Hash[records.map { |r| [r, 42] }]
+      end
+    end
+
+    values = 4.times.map { klass.new }.map.with_prelude { |r| r.number }
+
+    expect(values.uniq).to eq([42])
+    expect(call_count).to eq(4 / 2) # one per batch
+  end
+
+  it 'should be able to use batch_size with default_proc' do
+    call_count = 0
+
+    klass = Class.new(ActiveRecord::Base) do
+      self.table_name = 'breweries'
+
+      define_prelude(:number, batch_size: 2) do |records|
+        call_count += 1
+        Hash.new { |h, k| h[k] = 42 }
+      end
+    end
+
+    values = 4.times.map { klass.new }.map.with_prelude { |r| r.number }
+
+    expect(values.uniq).to eq([42])
+    expect(call_count).to eq(4 / 2) # one per batch
   end
 end
