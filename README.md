@@ -108,7 +108,7 @@ post.featured_comments # hit db
 post.featured_comments # memoized
 ```
 
-### `default_proc`
+### Hash#default_proc
 
 It's also possible to make prelude definitions that return a `Hash` with a
 `default_proc` set instead of containing the proper values. This can be useful
