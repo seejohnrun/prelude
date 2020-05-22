@@ -16,13 +16,12 @@ module Prelude
       def define_prelude(name, &blk)
         preloaders[name] = blk
 
-        define_method(name) do
+        define_method(name) do |*args|
           unless @prelude_preloader
             @prelude_preloader = Preloader.new(self.class, [self])
           end
 
-          @prelude_preloader.preload(name)
-          @prelude_preloader.fetch(name, self)
+          @prelude_preloader.preload(name, *args)[self]
         end
       end
     end
