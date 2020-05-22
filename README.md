@@ -107,3 +107,29 @@ post = Post.new
 post.featured_comments # hit db
 post.featured_comments # memoized
 ```
+
+### Arguments
+
+Prelude methods can also be defined to take in arguments. In this case, your
+batch method will be called one time for each unique set of arguments passed
+to a given method. This can often be useful when trying to preload things
+like authorizations for a given user:
+
+``` erb
+<% breweries.each do |brewery| %>
+  <%= brewery.name %>
+
+  <% if brewery.has_admin?(current_user) %>
+    <%= link_to 'Edit', '#' %>
+  <% end %>
+<% end %>
+```
+
+Where your model defines a prelude like:
+
+``` ruby
+define_prelude :has_admin? do |breweries, current_user|
+  admin_ids = current_user.admin_brewery_ids
+  Hash.new { |h, brewery| admin_ids.include?(brewery.id) }
+end
+```
