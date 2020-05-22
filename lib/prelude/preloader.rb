@@ -7,7 +7,7 @@ module Prelude
     end
 
     def fetch(name, object, *args)
-      method = @klass.preloaders.fetch(name)
+      method = @klass.prelude_methods.fetch(name)
 
       # If this object has a run, return the value
       if run = run_for(method, args, object)

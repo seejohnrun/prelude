@@ -9,13 +9,13 @@ module Prelude
 
     class_methods do
       # Mapping of field name to block for resolving a given preloader
-      def preloaders
-        @prelude_preloaders ||= {}
+      def prelude_methods
+        @prelude_methods ||= {}
       end
 
       # Define how to preload a given method
       def define_prelude(name, batch_size: nil, &blk)
-        preloaders[name] = Prelude::Method.new(batch_size: batch_size, &blk)
+        prelude_methods[name] = Prelude::Method.new(batch_size: batch_size, &blk)
 
         define_method(name) do |*args|
           unless @prelude_preloader
