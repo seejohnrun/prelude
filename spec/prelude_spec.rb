@@ -101,4 +101,27 @@ describe Prelude do
     expect(numbers.uniq).to eq([42]) # all the same result
     expect(call_count).to eq(1) # only one call
   end
+
+  it 'should be able to pass arguments to methods' do
+    call_count = 0
+
+    klass = Class.new(ActiveRecord::Base) do
+      self.table_name = 'breweries'
+
+      define_prelude(:multiply_by) do |records, by|
+        call_count += 1
+        Hash.new { |h, k| h[k] = 42 * by }
+      end
+    end
+
+    instances = 3.times.map { klass.new }
+
+    instances.each.with_prelude do |i|
+      expect(i.multiply_by(1)).to eq(42)
+      expect(i.multiply_by(1)).to eq(42)
+      expect(i.multiply_by(2)).to eq(84)
+    end
+
+    expect(call_count).to eq(2) # one for each argument
+  end
 end

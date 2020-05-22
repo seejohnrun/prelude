@@ -3,17 +3,12 @@ module Prelude
     def initialize(klass, records)
       @klass = klass
       @records = records
-      @values = {}
+      @values = Hash.new { |h, k| h[k] = {} }
     end
 
-    # Preload the given field for all records
-    def preload(name)
-      @values[name] ||= @klass.preloaders[name].call(@records)
-    end
-
-    # Fetch the preloaded value for the given instance
-    def fetch(name, object)
-      @values.dig(name, object)
+    # Preload the given field with the given args for all records
+    def preload(name, *args)
+      @values[name][args] ||= @klass.preloaders[name].call(@records, *args)
     end
   end
 end
