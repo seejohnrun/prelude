@@ -103,13 +103,13 @@ describe Prelude do
   end
 
   it 'should be able to pass arguments to methods' do
-    call_count = 0
+    call_arguments = []
 
     klass = Class.new(ActiveRecord::Base) do
       self.table_name = 'breweries'
 
       define_prelude(:multiply_by) do |records, by|
-        call_count += 1
+        call_arguments << [records.to_a, by]
         Hash.new { |h, k| h[k] = 42 * by }
       end
     end
@@ -122,7 +122,11 @@ describe Prelude do
       expect(i.multiply_by(2)).to eq(84)
     end
 
-    expect(call_count).to eq(2) # one for each argument
+    # two calls with the appropriate arguments
+    expect(call_arguments).to eq([
+      [instances, 1], # deduped
+      [instances, 2]
+    ])
   end
 
   it 'should be able to set a batch size' do
