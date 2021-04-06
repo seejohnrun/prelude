@@ -15,8 +15,8 @@ Gem::Specification.new do |s|
   s.test_files = Dir.glob('spec/**/*.rb')
   s.require_paths = ['lib']
 
-  s.add_dependency('activerecord')
-  s.add_development_dependency('rspec')
-  s.add_development_dependency('sqlite3')
-  s.add_development_dependency('pry-byebug')
+  s.add_dependency('activerecord', '>= 6')
+  s.add_development_dependency('rspec', '~> 3')
+  s.add_development_dependency('sqlite3', '~> 1.4')
+  s.add_development_dependency('pry-byebug', '~> 1')
 end
