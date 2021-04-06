@@ -1,5 +1,9 @@
 # Prelude
 
+## Installation
+
+Prelude is available on RubyGems as `prelude-batch-loader`.
+
 ## Why?
 
 A lot of times you write code in a view that leads to an `n+1`, like:

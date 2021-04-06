@@ -3,7 +3,7 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require 'prelude/version'
 
 Gem::Specification.new do |s|
-  s.name = 'prelude'
+  s.name = 'prelude-batch-loader'
   s.summary = 'ActiveRecord custom preloading'
   s.author = 'John Crepezzi'
   s.email = 'john.crepezzi@gmail.com'
