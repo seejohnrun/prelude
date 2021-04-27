@@ -31,7 +31,7 @@ describe Prelude do
 
     5.times { klass.create! }
 
-    expect(klass.all.map(&:number).uniq).to eq([42]) # all the same result
+    expect(klass.all.with_prelude.map(&:number).uniq).to eq([42]) # all the same result
     expect(call_count).to eq(1) # only one call
   end
 

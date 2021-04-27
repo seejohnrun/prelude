@@ -71,7 +71,7 @@ end
 The view stays simple:
 
 ``` erb
-<% posts.each do |post| %>
+<% posts.each.with_prelude do |post| %>
   <% post.featured_comments.each do |comment| %> <%# no n+1 %>
     <%= comment.body %>
   <% end %>
