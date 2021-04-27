@@ -1,7 +1,9 @@
 require 'fileutils'
 require 'active_record'
 require 'pry'
-require_relative '../lib/prelude'
+
+$LOAD_PATH.unshift File.expand_path("../../lib", __FILE__)
+require 'prelude'
 
 # Remove existing
 FileUtils.rm_rf('db.sqlite3')
