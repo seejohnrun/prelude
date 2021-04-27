@@ -8,8 +8,7 @@ module Prelude
       raise TypeMismatch unless map(&:class).uniq.count == 1
 
       # Share a preloader
-      preloader = Preloader.new(first.class, self)
-      each { |r| r.prelude_preloader = preloader }
+      Prelude.wrap(self)
 
       # Iterate
       each { |o| yield o }
