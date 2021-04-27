@@ -164,4 +164,25 @@ describe Prelude do
     expect(values.uniq).to eq([42])
     expect(call_count).to eq(4 / 2) # one per batch
   end
+
+  it 'should preload when called explicitly' do
+    call_count = 0
+    klass = Class.new do
+      include Prelude::Preloadable
+
+      define_prelude(:foo) do |records|
+        call_count += 1
+        records.index_with("bar")
+      end
+    end
+
+    records = 4.times.map { klass.new }
+    expect(call_count).to eq(0)
+
+    Prelude.preload(records, :foo)
+    expect(call_count).to eq(1)
+
+    expect(records.map(&:foo)).to eq(["bar"]*4)
+    expect(call_count).to eq(1)
+  end
 end
