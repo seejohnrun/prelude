@@ -149,4 +149,24 @@ describe Prelude do
     expect(records.map(&:foo)).to eq(["bar"]*4)
     expect(call_count).to eq(1)
   end
+
+  it 'should not preload if an object was already loaded as part of a previous batch' do
+    batch_sizes = []
+    klass = Class.new do
+      include Prelude::Preloadable
+
+      define_prelude(:foo) do |records|
+        batch_sizes << records.count
+        {}
+      end
+    end
+
+    object = klass.new
+
+    Prelude.preload([object], :foo)
+    expect(batch_sizes).to eq([1])
+
+    Prelude.preload([object, klass.new], :foo)
+    expect(batch_sizes).to eq([1, 1])
+  end
 end

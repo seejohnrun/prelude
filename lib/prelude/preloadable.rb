@@ -11,6 +11,11 @@ module Prelude
       @preloaded_values ||= {}
     end
 
+    def has_preloaded_value_for?(name, args)
+      key = [name, args]
+      preloaded_values.key?(key)
+    end
+
     def set_preloaded_value_for(name, args, result)
       key = [name, args]
       preloaded_values[key] = result
@@ -28,7 +33,7 @@ module Prelude
 
         define_method(name) do |*args|
           key = [name, args]
-          return preloaded_values[key] if preloaded_values.key?(key)
+          return preloaded_values[key] if has_preloaded_value_for?(name, args)
 
           unless @prelude_preloader
             @prelude_preloader = Preloader.new(self.class, [self])
