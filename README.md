@@ -119,20 +119,6 @@ It's also possible to make prelude definitions that return a `Hash` with a
 when it's not convenient to build the entire hash up front. (See example in the
 'Arguments' section)
 
-### Batching
-
-It's possible to set a batch size when defining a prelude method so that
-records are fetched at max in groups of that size. The preloader will choose
-the order of batches to load based on the order of data access.
-
-``` ruby
-define_prelude :expensive_calculation, batch_size: 500 do |breweries|
-  # ...
-end
-```
-
-The default batch size contains all records.
-
 ### Arguments
 
 Prelude methods can also be defined to take in arguments. In this case, your
