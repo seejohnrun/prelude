@@ -14,8 +14,8 @@ module Prelude
       end
 
       # Define how to preload a given method
-      def define_prelude(name, batch_size: nil, &blk)
-        prelude_methods[name] = Prelude::Method.new(batch_size: batch_size, &blk)
+      def define_prelude(name, &blk)
+        prelude_methods[name] = Prelude::Method.new(&blk)
 
         define_method(name) do |*args|
           unless @prelude_preloader

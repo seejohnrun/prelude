@@ -10,20 +10,12 @@ module Prelude
       method = @klass.prelude_methods.fetch(name)
 
       # If this object has a run, return the value
-      if run = run_for(method, args, object)
+      if run = run_for(method, args)
         return run[object]
       end
 
-      # Choose a batch of the correct size that contains the object we're trying to load,
-      # or use all if we're not batching
-      run = if method.batch_size
-        remaining_records = @records.to_a - resolved_objects_for(method, args)
-        slices = remaining_records.each_slice(method.batch_size)
-        slice = slices.detect { |slice| slice.include?(object) }
-        preload(method, slice, args)
-      else
-        preload(method, @records, args)
-      end
+      # Choose a run for the arguments that we're trying to load
+      run = preload(method, @records, args)
 
       # Return the value for this object
       run[object]
@@ -37,25 +29,20 @@ module Prelude
 
       # set the run for each of these name/record/args combos
       records.each do |record|
-        set_run_for(method, args, record, results)
+        set_run_for(method, args, results)
       end
 
       # Return the run
       results
     end
 
-    def run_for(method, args, object)
-      @runs.dig(method, args, object)
+    def run_for(method, args)
+      @runs.dig(method, args)
     end
 
-    def resolved_objects_for(method, args)
-      @runs.dig(method, args)&.keys || []
-    end
-
-    def set_run_for(method, args, object, run)
+    def set_run_for(method, args, run)
       @runs[method] ||= {}
-      @runs[method][args] ||= {}
-      @runs[method][args][object] = run
+      @runs[method][args] = run
     end
   end
 end
