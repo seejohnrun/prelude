@@ -149,4 +149,29 @@ describe Prelude do
     expect(records.map(&:foo)).to eq(["bar"]*4)
     expect(call_count).to eq(1)
   end
+
+  it 'should preload when called explicitly with arguments' do
+    call_counts = {arg1: 0, arg2: 0}
+    klass = Class.new do
+      include Prelude::Preloadable
+
+      define_prelude(:foo) do |records, arg|
+        call_counts[arg] += 1
+        records.index_with(arg)
+      end
+    end
+
+    records = 4.times.map { klass.new }
+    expect(call_counts).to eq(arg1: 0, arg2: 0)
+
+    Prelude.preload(records, :foo, :arg1)
+    expect(call_counts).to eq(arg1: 1, arg2: 0)
+
+    Prelude.preload(records, :foo, :arg2)
+    expect(call_counts).to eq(arg1: 1, arg2: 1)
+
+    expect(records.map { |record| record.foo(:arg1) }).to eq([:arg1]*4)
+    expect(records.map { |record| record.foo(:arg2) }).to eq([:arg2]*4)
+    expect(call_counts).to eq(arg1: 1, arg2: 1)
+  end
 end

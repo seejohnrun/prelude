@@ -9,8 +9,8 @@ module Prelude
     records.each { |r| r.prelude_preloader = preloader }
   end
 
-  def self.preload(records, method)
-    wrap(records).each(&method)
+  def self.preload(records, method, *args)
+    wrap(records).each { |record| record.public_send(method, *args) }
   end
 end
 
