@@ -22,6 +22,12 @@ module Prelude
         @prelude_methods ||= {}
       end
 
+      # Copy parent prelude methods to subclasses
+      def inherited(subclass)
+        subclass.prelude_methods.merge!(prelude_methods)
+        super
+      end
+
       # Define how to preload a given method
       def define_prelude(name, &blk)
         prelude_methods[name] = Prelude::Method.new(&blk)
