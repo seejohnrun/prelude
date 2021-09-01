@@ -37,7 +37,7 @@ module Prelude
           return preloaded_values[key] if preloaded_values.key?(key)
 
           unless @prelude_preloader
-            @prelude_preloader = Preloader.new(self.class, [self])
+            @prelude_preloader = Preloader.new([self])
           end
 
           @prelude_preloader.fetch(name, *args)

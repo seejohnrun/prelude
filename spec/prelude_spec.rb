@@ -48,6 +48,13 @@ describe Prelude do
 
     expect(parent_class.new.overridden_number).to eq(12)
     expect(child_class.new.overridden_number).to eq(54)
+
+    parent = parent_class.new
+    child = child_class.new
+    Prelude.preload([parent, child], :overridden_number)
+
+    expect(parent.overridden_number).to eq(12)
+    expect(child.overridden_number).to eq(54)
   end
 
   it 'should be able to batch multiple calls into one' do
