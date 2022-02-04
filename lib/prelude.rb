@@ -5,7 +5,7 @@ require 'active_support'
 
 module Prelude
   def self.wrap(records)
-    preloader = Preloader.new(records.first.class, records)
+    preloader = Preloader.new(records)
     records.each { |r| r.prelude_preloader = preloader }
   end
 

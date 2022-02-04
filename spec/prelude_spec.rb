@@ -17,6 +17,46 @@ describe Prelude do
     expect(klass.new.number).to eq(42)
   end
 
+  it 'should allow inheritance' do
+    parent_class = Class.new do
+      include Prelude::Preloadable
+
+      define_prelude(:parent_number) do |records|
+        Hash.new { |h, k| h[k] = 42 } # answer is always 42
+      end
+
+      define_prelude(:overridden_number) do |records|
+        Hash.new { |h, k| h[k] = 12 } # answer is always 12
+      end
+    end
+
+    child_class = Class.new(parent_class) do |records|
+      define_prelude(:child_number) do |records|
+        Hash.new { |h, k| h[k] = 77 } # answer is always 77
+      end
+
+      define_prelude(:overridden_number) do |records|
+        Hash.new { |h, k| h[k] = 54 } # answer is always 54
+      end
+    end
+
+    expect(parent_class.new.parent_number).to eq(42)
+    expect(child_class.new.parent_number).to eq(42)
+
+    expect(parent_class.new).not_to respond_to(:child_number)
+    expect(child_class.new.child_number).to eq(77)
+
+    expect(parent_class.new.overridden_number).to eq(12)
+    expect(child_class.new.overridden_number).to eq(54)
+
+    parent = parent_class.new
+    child = child_class.new
+    Prelude.preload([parent, child], :overridden_number)
+
+    expect(parent.overridden_number).to eq(12)
+    expect(child.overridden_number).to eq(54)
+  end
+
   it 'should be able to batch multiple calls into one' do
     call_count = 0
 
