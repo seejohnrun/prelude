@@ -214,4 +214,63 @@ describe Prelude do
     expect(records.map { |record| record.foo(:arg2) }).to eq([:arg2]*4)
     expect(call_counts).to eq(arg1: 1, arg2: 1)
   end
+
+  context 'inverse methods' do
+    it 'should define an inverse method to be called on the argument' do
+      call_arguments = []
+
+      User = Struct.new(:name)
+      Brewery = Class.new(ActiveRecord::Base) do
+        self.table_name = 'breweries'
+
+        define_prelude(:has_been_visited_by?, inverse: [User, :has_visited?]) do |breweries, user|
+          call_arguments << [breweries.to_a, user.name]
+          Hash.new { |h, k| h[k] = user.name == "John" }
+        end
+      end
+
+      breweries = 3.times.map { Brewery.new }
+
+      john = User.new("John")
+      ian = User.new("Ian")
+
+      breweries.each.with_prelude do |b|
+        expect(john.has_visited?(b)).to eq(true)
+        expect(ian.has_visited?(b)).to eq(false)
+
+        expect(b.has_been_visited_by?(john)).to eq(true)
+        expect(b.has_been_visited_by?(ian)).to eq(false)
+      end
+
+      # two calls with the appropriate arguments
+      expect(call_arguments).to eq([
+        [breweries, "John"], # deduped
+        [breweries, "Ian"]
+      ])
+    end
+
+    it 'should raise if an inverse is provided and there are fewer than 2 block arguments' do
+      expect {
+        Brewery = Class.new(ActiveRecord::Base) do
+          self.table_name = 'breweries'
+
+          define_prelude(:has_been_visited_by?, inverse: [User, :has_visited?]) do |breweries|
+            Hash.new { |h, k| h[k] = user.name == "John" }
+          end
+        end
+      }.to raise_error(Prelude::AmbiguousInverseError)
+    end
+
+    it 'should raise if an inverse is provided and there are more than 2 block arguments' do
+      expect {
+        Brewery = Class.new(ActiveRecord::Base) do
+          self.table_name = 'breweries'
+
+          define_prelude(:has_been_visited_by?, inverse: [User, :has_visited?]) do |breweries, user_a, user_b|
+            Hash.new { |h, k| h[k] = user.name == "John" }
+          end
+        end
+      }.to raise_error(Prelude::AmbiguousInverseError)
+    end
+  end
 end

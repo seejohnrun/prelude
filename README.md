@@ -8,7 +8,7 @@ Prelude is available on RubyGems as `prelude-batch-loader`.
 
 A lot of times you write code in a view that leads to an `n+1`, like:
 
-``` erb
+```erb
 <% posts.each do |post| %>
   <% post.comments.featured.each do |comment| %>
     <%= comment.body %>
@@ -19,13 +19,15 @@ A lot of times you write code in a view that leads to an `n+1`, like:
 Each of the current ways to handle this scenario come with drawbacks:
 
 1. `includes`:
-  - only works on `ActiveRecord::Relation` (not `Array`s) of records
-  - only can preload other associations defined on the model
-  - requires that you either declare the associations to load in the `controller`, _or_ add `includes` throughout the `view`
+
+- only works on `ActiveRecord::Relation` (not `Array`s) of records
+- only can preload other associations defined on the model
+- requires that you either declare the associations to load in the `controller`, _or_ add `includes` throughout the `view`
 
 2. gems like `bullet`
-  - raise errors when `n+1`s are detected, instead of optimizing them
-  - are still difficult to fix with `includes` due to the reasons above
+
+- raise errors when `n+1`s are detected, instead of optimizing them
+- are still difficult to fix with `includes` due to the reasons above
 
 ---
 
@@ -33,7 +35,7 @@ Imagine we want to preload all of the `Comment`s for the posts in an `Array`,
 but only the ones that are `featured`. Normally this would lead to an `N+1`,
 so we might write:
 
-``` erb
+```erb
 <% featured_comments_by_post_id = Comment.featured.where(post: posts).group_by(&:post_id) %>
 <% posts.each do |post| %>
   <% featured_comments = featured_comments_by_post_id[post.id] %>
@@ -58,7 +60,7 @@ and brings the preloading closer to the data.
 In the model we can define a custom preloader which takes in a collection of objects
 and returns a Hash of `object -> result`:
 
-``` ruby
+```ruby
 class Post < ActiveRecord::Base
   # An implementation which takes in an Array[Post], and returns
   # a Hash[Post]=>Array[Comment]
@@ -70,7 +72,7 @@ end
 
 The view stays simple:
 
-``` erb
+```erb
 <% posts.each.with_prelude do |post| %>
   <% post.featured_comments.each do |comment| %> <%# no n+1 %>
     <%= comment.body %>
@@ -90,7 +92,7 @@ inside of an iteration load other associations without using batched loaders.
 If you'd like to use Prelude with an Array of records, it's simple. Just call
 `with_prelude` while iterating, for example:
 
-``` ruby
+```ruby
 posts = [Post.find(1), Post.find(2)] # Array, not relation
 posts.each.with_prelude do |post|
   post.featured_comments
@@ -106,7 +108,7 @@ of objects or on a single object.
 In the case of being called on a single object, they behave just like a
 memoized method call:
 
-``` ruby
+```ruby
 post = Post.new
 post.featured_comments # hit db
 post.featured_comments # memoized
@@ -126,7 +128,7 @@ batch method will be called one time for each unique set of arguments passed
 to a given method. This can often be useful when trying to preload things
 like authorizations for a given user:
 
-``` erb
+```erb
 <% breweries.each do |brewery| %>
   <%= brewery.name %>
 
@@ -138,8 +140,42 @@ like authorizations for a given user:
 
 Where your model defines a prelude like:
 
-``` ruby
+```ruby
 define_prelude :has_admin? do |breweries, current_user|
+  admin_ids = current_user.admin_brewery_ids
+  Hash.new { |h, brewery| admin_ids.include?(brewery.id) }
+end
+```
+
+### Inverse methods
+
+Sometimes it may be more convenient, or it may read more naturally to flip the method call.
+
+Take this example again:
+
+```ruby
+define_prelude :has_admin? do |breweries, current_user|
+  admin_ids = current_user.admin_brewery_ids
+  Hash.new { |h, brewery| admin_ids.include?(brewery.id) }
+end
+```
+
+What if you wanted to call `current_user.admin_of?(brewery)`?
+
+You could define it as such:
+
+```ruby
+class User
+  def admin_of?(brewery)
+    brewery.has_admin?(self)
+  end
+end
+```
+
+Alternatively, you could have prelude define it automatically by passing a tuple of [InverseClass, :inverse_method_name] to the `inverse` option:
+
+```ruby
+define_prelude :has_admin?, inverse: [User, :admin_of?] do |breweries, current_user|
   admin_ids = current_user.admin_brewery_ids
   Hash.new { |h, brewery| admin_ids.include?(brewery.id) }
 end
