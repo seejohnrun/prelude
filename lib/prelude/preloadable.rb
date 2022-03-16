@@ -31,17 +31,22 @@ module Prelude
       # Define how to preload a given method
       def define_prelude(name, &blk)
         prelude_methods[name] = Prelude::Method.new(&blk)
+        { name => false, "#{name}!" => true }.each do |method_name, strict|
+          define_method(method_name) do |*args|
+            key = [name, args]
+            return preloaded_values[key] if preloaded_values.key?(key)
 
-        define_method(name) do |*args|
-          key = [name, args]
-          return preloaded_values[key] if preloaded_values.key?(key)
+            unless @prelude_preloader
+              if strict
+                raise Prelude::StrictLoadingViolationError, "refusing to lazily initialize preloader, use `wrap` or `with_prelude`"
+              else
+                @prelude_preloader = Preloader.new([self])
+              end
+            end
 
-          unless @prelude_preloader
-            @prelude_preloader = Preloader.new([self])
+            @prelude_preloader.fetch(name, *args)
+            preloaded_values[key]
           end
-
-          @prelude_preloader.fetch(name, *args)
-          preloaded_values[key]
         end
       end
     end
