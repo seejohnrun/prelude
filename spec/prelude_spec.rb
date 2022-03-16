@@ -214,4 +214,56 @@ describe Prelude do
     expect(records.map { |record| record.foo(:arg2) }).to eq([:arg2]*4)
     expect(call_counts).to eq(arg1: 1, arg2: 1)
   end
+
+  context 'strict form' do
+    let(:klass) {
+      Class.new do
+        include Prelude::Preloadable
+
+        class << self
+          attr_accessor :call_counts
+        end
+
+        @call_counts = { arg0: 0 }
+
+        define_prelude(:foo) do |records, arg|
+          @call_counts[arg] += 1
+          records.index_with(arg)
+        end
+      end
+    }
+
+    it 'raises on unwrapped instances' do
+      expect{ klass.new.foo!(:arg0) }.to raise_error(Prelude::StrictLoadingViolationError)
+      expect(klass.call_counts).to eq(arg0: 0)
+    end
+
+    it 'raises on inadvertently mixed arrays' do
+      arr1 = Prelude.wrap([klass.new, klass.new])
+      arr2 = [klass.new]
+      # A way to end up with orphaned instances that lack context
+      arr = arr1 + arr2
+
+      arr[0].foo!(:arg0)
+      arr[1].foo!(:arg0)
+      expect{ arr[2].foo!(:arg0) }.to raise_error(Prelude::StrictLoadingViolationError)
+      expect(klass.call_counts).to eq(arg0: 1)
+    end
+
+    it 'succeeds with existing preloader context using with_prelude' do
+      [klass.new, klass.new].with_prelude do |obj|
+        obj.foo!(:arg0) # no error
+      end
+
+      expect(klass.call_counts).to eq(arg0: 1)
+    end
+
+    it 'succeeds with existing preloader context using wrap' do
+      Prelude.wrap([klass.new, klass.new]).each do |obj|
+        obj.foo!(:arg0)
+      end
+
+      expect(klass.call_counts).to eq(arg0: 1)
+    end
+  end
 end

@@ -4,6 +4,10 @@ require_relative 'prelude/enumerator'
 require 'active_support'
 
 module Prelude
+  # Raised when the strict form of a prelude method is called
+  # without a Preloader context.
+  class StrictLoadingViolationError < RuntimeError; end
+
   def self.wrap(records)
     preloader = Preloader.new(records)
     records.each { |r| r.prelude_preloader = preloader }

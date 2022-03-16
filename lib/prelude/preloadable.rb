@@ -43,6 +43,19 @@ module Prelude
           @prelude_preloader.fetch(name, *args)
           preloaded_values[key]
         end
+
+        # strict form with ! suffix
+        define_method("#{name}!") do |*args|
+          key = [name, args]
+          return preloaded_values[key] if preloaded_values.key?(key)
+
+          unless @prelude_preloader
+            raise Prelude::StrictLoadingViolationError, "refusing to lazily initialize preloader, use `wrap` or `with_prelude`"
+          end
+
+          @prelude_preloader.fetch(name, *args)
+          preloaded_values[key]
+        end
       end
     end
   end
