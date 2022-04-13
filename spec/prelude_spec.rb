@@ -214,4 +214,28 @@ describe Prelude do
     expect(records.map { |record| record.foo(:arg2) }).to eq([:arg2]*4)
     expect(call_counts).to eq(arg1: 1, arg2: 1)
   end
+
+  it 'should require preloaded data' do
+    klass = Class.new do
+      include Prelude::Preloadable
+
+      define_prelude(:double) do |records, arg|
+        records.index_with(arg * 2)
+      end
+    end
+    record = klass.new
+
+    expect {
+      record.preloaded.double(3)
+    }.to raise_error(Prelude::ValueNotPreloaded)
+
+    Prelude.preload([record], :double, 3)
+
+    expect { record.preloaded.double(3) }.not_to raise_error
+    expect(record.preloaded.double(3)).to eq(6)
+
+    expect {
+      record.preloaded.double(2)
+    }.to raise_error(Prelude::ValueNotPreloaded)
+  end
 end

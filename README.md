@@ -144,3 +144,23 @@ define_prelude :has_admin? do |breweries, current_user|
   Hash.new { |h, brewery| admin_ids.include?(brewery.id) }
 end
 ```
+
+### Explicit preloading
+
+Sometimes it's useful to preload values before you need to use them.
+
+``` ruby
+Prelude.preload(comments, :body, format: :html)
+```
+
+Later, you can require Prelude to use the preloaded value:
+
+``` erb
+<% comments.each do |comment| %>
+  <%= comment.preloaded.body(format: :html) %>
+<% end %>
+```
+
+This prevents you from accidentally loading data twice by changing the arguments
+to the `Prelude.preload` call without also remembering to change the arguments
+to the `Comment#body` call in the view or vice versa.
