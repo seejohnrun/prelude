@@ -1,4 +1,5 @@
 require_relative './preloader'
+require_relative './preloaded'
 require_relative './method'
 
 module Prelude
@@ -14,6 +15,10 @@ module Prelude
     def set_preloaded_value_for(name, args, result)
       key = [name, args]
       preloaded_values[key] = result
+    end
+
+    def preloaded
+      Preloaded.new(self)
     end
 
     class_methods do
